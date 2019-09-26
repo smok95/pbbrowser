@@ -1,0 +1,84 @@
+{
+	"name": "PBBrowser",
+	"productName": "PBBrowser",
+	"version": "0.0.8",
+	"description": "PowerBASE WebBrowser",
+	"license": "UNLICENSED",
+	"repository": "smok95/pbbrowser",
+	"author": {
+		"name": "Kim,Jong-kook",
+		"email": "kjk15881588@gmail.com",
+		"url": ""
+	},
+	"scripts": {
+		"postinstall": "electron-builder install-app-deps",
+		"lint": "xo",
+		"test": "npm run lint",
+		"start": "electron .",
+		"pack": "electron-builder --dir",
+		"dist": "electron-builder --windows --ia32",
+		"release": "np",
+		"cert1": "electron . --url=\"https://pbwts.korea-stock.com:8090/wtsapp/jsp/WebTR/COMMON/certpage_popup.jsp?CertPageTp=1&FirmNo=086\""
+	},
+	"dependencies": {
+		"commander": "^2.20.0",
+		"electron-context-menu": "^0.13.0",
+		"electron-debug": "^3.0.1",
+		"electron-log": "^3.0.7",
+		"electron-store": "^4.0.0",
+		"electron-unhandled": "^2.2.0",
+		"electron-updater": "^4.1.2",
+		"electron-util": "^0.12.1"
+	},
+	"devDependencies": {
+		"electron": "^5.0.8",
+		"electron-builder": "^21.1.5",
+		"np": "^5.0.3",
+		"xo": "^0.24.0"
+	},
+	"xo": {
+		"envs": [
+			"node",
+			"browser"
+		]
+	},
+	"np": {
+		"publish": false,
+		"releaseDraft": false
+	},
+	"build": {
+		"appId": "com.yuri.pbbrowser",
+		"files": [
+			"!require_modules${/*}"
+		],
+		"mac": {
+			"category": "public.app-category.social-networking",
+			"darkModeSupport": true
+		},
+		"dmg": {
+			"iconSize": 160,
+			"contents": [
+				{
+					"x": 180,
+					"y": 170
+				},
+				{
+					"x": 480,
+					"y": 170,
+					"type": "link",
+					"path": "/Applications"
+				}
+			]
+		},
+		"linux": {
+			"target": [
+				"AppImage",
+				"deb"
+			],
+			"category": "Network;Chat"
+		},
+		"win": {
+			"target": "zip"
+		}
+	}
+}
