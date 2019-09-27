@@ -1,0 +1,11 @@
+윈도우 빌드시 필수프로그램
+--------------------------
+cmake (https://cmake.org/download/)
+Visual Studio 2019
+
+
+최초 프로젝트 생성 방법
+-----------------------
+cmd창에서 다음과 같이 명령어 입력
+cmake -G "Visual Studio 16"
+

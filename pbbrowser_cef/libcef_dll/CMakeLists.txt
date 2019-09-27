@@ -486,6 +486,7 @@ set(LIBCEF_INCLUDE_BASE_INTERNAL_SRCS
   ../include/base/internal/cef_thread_checker_impl.h
   )
 set(LIBCEF_INCLUDE_BASE_INTERNAL_SRCS_LINUX
+  ../include/base/internal/cef_atomicops_arm64_gcc.h
   ../include/base/internal/cef_atomicops_arm_gcc.h
   ../include/base/internal/cef_atomicops_atomicword_compat.h
   ../include/base/internal/cef_atomicops_x86_gcc.h

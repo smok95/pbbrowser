@@ -1,52 +1,52 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_app.cc">
+    <ClCompile Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_app.cc">
       <Filter>pbbrowser</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_handler.cc">
+    <ClCompile Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_handler.cc">
       <Filter>pbbrowser</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_win.cc">
+    <ClCompile Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_win.cc">
       <Filter>pbbrowser</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_handler_win.cc">
+    <ClCompile Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_handler_win.cc">
       <Filter>pbbrowser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_app.h">
+    <ClInclude Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_app.h">
       <Filter>pbbrowser</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_handler.h">
+    <ClInclude Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser_handler.h">
       <Filter>pbbrowser</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\resource.h">
+    <ClInclude Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\resource.h">
       <Filter>pbbrowser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\CMakeLists.txt" />
+    <CustomBuild Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\res\pbbrowser.ico">
+    <None Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\res\pbbrowser.ico">
       <Filter>pbbrowser\res</Filter>
     </None>
-    <None Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\res\small.ico">
+    <None Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\res\small.ico">
       <Filter>pbbrowser\res</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="E:\Projects\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser.rc">
+    <ResourceCompile Include="E:\dev\pbbrowser\pbbrowser_cef\tests\pbbrowser\pbbrowser.rc">
       <Filter>pbbrowser</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="pbbrowser">
-      <UniqueIdentifier>{2A2AC483-79EF-3A81-A5CA-83333D5DD817}</UniqueIdentifier>
+      <UniqueIdentifier>{748DF3AA-C234-3E72-929E-5C33898F114E}</UniqueIdentifier>
     </Filter>
     <Filter Include="pbbrowser\res">
-      <UniqueIdentifier>{ADEF0C41-C01B-3FE4-A2C2-CCBB3C0230BE}</UniqueIdentifier>
+      <UniqueIdentifier>{09E1002A-8B0D-31EE-86E9-2873BDAD6F77}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

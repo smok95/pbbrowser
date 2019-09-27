@@ -2967,6 +2967,9 @@ class GTEST_API_ String {
   // Formats an int value as "%X".
   static std::string FormatHexInt(int value);
 
+  // Formats an int value as "%X".
+  static std::string FormatHexUInt32(UInt32 value);
+
   // Formats a byte as "%02X".
   static std::string FormatByte(unsigned char value);
 
@@ -6937,7 +6940,8 @@ struct SuiteApiResolver : T {
   using Test =
       typename std::conditional<sizeof(T) != 0, ::testing::Test, void>::type;
 
-  static SetUpTearDownSuiteFuncType GetSetUpCaseOrSuite() {
+  static SetUpTearDownSuiteFuncType GetSetUpCaseOrSuite(const char* filename,
+                                                        int line_num) {
     SetUpTearDownSuiteFuncType test_case_fp =
         GetNotDefaultOrNull(&T::SetUpTestCase, &Test::SetUpTestCase);
     SetUpTearDownSuiteFuncType test_suite_fp =
@@ -6945,12 +6949,14 @@ struct SuiteApiResolver : T {
 
     GTEST_CHECK_(!test_case_fp || !test_suite_fp)
         << "Test can not provide both SetUpTestSuite and SetUpTestCase, please "
-           "make sure there is only one present ";
+           "make sure there is only one present at "
+        << filename << ":" << line_num;
 
     return test_case_fp != nullptr ? test_case_fp : test_suite_fp;
   }
 
-  static SetUpTearDownSuiteFuncType GetTearDownCaseOrSuite() {
+  static SetUpTearDownSuiteFuncType GetTearDownCaseOrSuite(const char* filename,
+                                                           int line_num) {
     SetUpTearDownSuiteFuncType test_case_fp =
         GetNotDefaultOrNull(&T::TearDownTestCase, &Test::TearDownTestCase);
     SetUpTearDownSuiteFuncType test_suite_fp =
@@ -6958,7 +6964,8 @@ struct SuiteApiResolver : T {
 
     GTEST_CHECK_(!test_case_fp || !test_suite_fp)
         << "Test can not provide both TearDownTestSuite and TearDownTestCase,"
-           " please make sure there is only one present ";
+           " please make sure there is only one present at"
+        << filename << ":" << line_num;
 
     return test_case_fp != nullptr ? test_case_fp : test_suite_fp;
   }
@@ -7131,14 +7138,16 @@ class TypeParameterizedTest {
     // list.
     MakeAndRegisterTestInfo(
         (std::string(prefix) + (prefix[0] == '\0' ? "" : "/") + case_name +
-         "/" + type_names[index])
+         "/" + type_names[static_cast<size_t>(index)])
             .c_str(),
         StripTrailingSpaces(GetPrefixUntilComma(test_names)).c_str(),
         GetTypeName<Type>().c_str(),
         nullptr,  // No value parameter.
         code_location, GetTypeId<FixtureClass>(),
-        SuiteApiResolver<TestClass>::GetSetUpCaseOrSuite(),
-        SuiteApiResolver<TestClass>::GetTearDownCaseOrSuite(),
+        SuiteApiResolver<TestClass>::GetSetUpCaseOrSuite(
+            code_location.file.c_str(), code_location.line),
+        SuiteApiResolver<TestClass>::GetTearDownCaseOrSuite(
+            code_location.file.c_str(), code_location.line),
         new TestFactoryImpl<TestClass>);
 
     // Next, recurses (at compile time) with the tail of the type list.
@@ -7843,9 +7852,9 @@ constexpr bool InstantiateTypedTestCase_P_IsDeprecated() { return true; }
           #test_suite_name, #test_name, nullptr, nullptr,                     \
           ::testing::internal::CodeLocation(__FILE__, __LINE__), (parent_id), \
           ::testing::internal::SuiteApiResolver<                              \
-              parent_class>::GetSetUpCaseOrSuite(),                           \
+              parent_class>::GetSetUpCaseOrSuite(__FILE__, __LINE__),         \
           ::testing::internal::SuiteApiResolver<                              \
-              parent_class>::GetTearDownCaseOrSuite(),                        \
+              parent_class>::GetTearDownCaseOrSuite(__FILE__, __LINE__),      \
           new ::testing::internal::TestFactoryImpl<GTEST_TEST_CLASS_NAME_(    \
               test_suite_name, test_name)>);                                  \
   void GTEST_TEST_CLASS_NAME_(test_suite_name, test_name)::TestBody()
@@ -8125,9 +8134,10 @@ class TypeWithoutFormatter {
  public:
   // This default version is called when kTypeKind is kOtherType.
   static void PrintValue(const T& value, ::std::ostream* os) {
-    PrintBytesInObjectTo(static_cast<const unsigned char*>(
-                             reinterpret_cast<const void*>(&value)),
-                         sizeof(value), os);
+    PrintBytesInObjectTo(
+        static_cast<const unsigned char*>(
+            reinterpret_cast<const void*>(std::addressof(value))),
+        sizeof(value), os);
   }
 };
 
@@ -10954,8 +10964,8 @@ class ParameterizedTestSuiteInfo : public ParameterizedTestSuiteInfoBase {
               nullptr,  // No type parameter.
               PrintToString(*param_it).c_str(), code_location_,
               GetTestSuiteTypeId(),
-              SuiteApiResolver<TestSuite>::GetSetUpCaseOrSuite(),
-              SuiteApiResolver<TestSuite>::GetTearDownCaseOrSuite(),
+              SuiteApiResolver<TestSuite>::GetSetUpCaseOrSuite(file, line),
+              SuiteApiResolver<TestSuite>::GetTearDownCaseOrSuite(file, line),
               test_info->test_meta_factory->CreateTestFactory(*param_it));
         }  // for param_it
       }  // for gen_it
@@ -14348,6 +14358,11 @@ class TestWithParam : public Test, public WithParamInterface<T> {
 // Generates a fatal failure with a generic message.
 #define GTEST_FAIL() GTEST_FATAL_FAILURE_("Failed")
 
+// Like GTEST_FAIL(), but at the given source file location.
+#define GTEST_FAIL_AT(file, line)         \
+  GTEST_MESSAGE_AT_(file, line, "Failed", \
+                    ::testing::TestPartResult::kFatalFailure)
+
 // Define this macro to 1 to omit the definition of FAIL(), which is a
 // generic name and clashes with some other libraries.
 #if !GTEST_DONT_DEFINE_FAIL
@@ -14875,8 +14890,8 @@ TestInfo* RegisterTest(const char* test_suite_name, const char* test_name,
   return internal::MakeAndRegisterTestInfo(
       test_suite_name, test_name, type_param, value_param,
       internal::CodeLocation(file, line), internal::GetTypeId<TestT>(),
-      internal::SuiteApiResolver<TestT>::GetSetUpCaseOrSuite(),
-      internal::SuiteApiResolver<TestT>::GetTearDownCaseOrSuite(),
+      internal::SuiteApiResolver<TestT>::GetSetUpCaseOrSuite(file, line),
+      internal::SuiteApiResolver<TestT>::GetTearDownCaseOrSuite(file, line),
       new FactoryImpl{std::move(factory)});
 }
 

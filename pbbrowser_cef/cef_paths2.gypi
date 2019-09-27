@@ -88,6 +88,7 @@
     'includes_linux': [
       'include/base/internal/cef_atomicops_atomicword_compat.h',
       'include/base/internal/cef_atomicops_arm_gcc.h',
+      'include/base/internal/cef_atomicops_arm64_gcc.h',
       'include/base/internal/cef_atomicops_x86_gcc.h',
       'include/internal/cef_linux.h',
       'include/internal/cef_types_linux.h',
@@ -546,6 +547,7 @@
       'tests/shared/browser/resource_util.h',
       'tests/shared/browser/resource_util_mac.mm',
       'tests/shared/browser/resource_util_posix.cc',
+      'tests/ceftests/audio_output_unittest.cc',
       'tests/ceftests/client_app_delegates.cc',
       'tests/ceftests/cookie_unittest.cc',
       'tests/ceftests/dom_unittest.cc',

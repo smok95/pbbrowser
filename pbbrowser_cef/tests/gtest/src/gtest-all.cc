@@ -690,7 +690,8 @@ void ForEach(const Container& c, Functor functor) {
 // in range [0, v.size()).
 template <typename E>
 inline E GetElementOr(const std::vector<E>& v, int i, E default_value) {
-  return (i < 0 || i >= static_cast<int>(v.size())) ? default_value : v[i];
+  return (i < 0 || i >= static_cast<int>(v.size())) ? default_value
+                                                    : v[static_cast<size_t>(i)];
 }
 
 // Performs an in-place shuffle of a range of the vector's elements.
@@ -712,8 +713,11 @@ void ShuffleRange(internal::Random* random, int begin, int end,
   // http://en.wikipedia.org/wiki/Fisher-Yates_shuffle
   for (int range_width = end - begin; range_width >= 2; range_width--) {
     const int last_in_range = begin + range_width - 1;
-    const int selected = begin + random->Generate(range_width);
-    std::swap((*v)[selected], (*v)[last_in_range]);
+    const int selected =
+        begin +
+        static_cast<int>(random->Generate(static_cast<UInt32>(range_width)));
+    std::swap((*v)[static_cast<size_t>(selected)],
+              (*v)[static_cast<size_t>(last_in_range)]);
   }
 }
 
@@ -978,7 +982,7 @@ class GTEST_API_ UnitTestImpl {
   // total_test_suite_count() - 1. If i is not in that range, returns NULL.
   const TestSuite* GetTestSuite(int i) const {
     const int index = GetElementOr(test_suite_indices_, i, -1);
-    return index < 0 ? nullptr : test_suites_[i];
+    return index < 0 ? nullptr : test_suites_[static_cast<size_t>(i)];
   }
 
   //  Legacy API is deprecated but still available
@@ -990,7 +994,7 @@ class GTEST_API_ UnitTestImpl {
   // total_test_suite_count() - 1. If i is not in that range, returns NULL.
   TestSuite* GetMutableSuiteCase(int i) {
     const int index = GetElementOr(test_suite_indices_, i, -1);
-    return index < 0 ? nullptr : test_suites_[index];
+    return index < 0 ? nullptr : test_suites_[static_cast<size_t>(index)];
   }
 
   // Provides access to the event listener list.
@@ -1475,8 +1479,8 @@ class StreamingListener : public EmptyTestEventListener {
       GTEST_CHECK_(sockfd_ != -1)
           << "Send() can be called only when there is a connection.";
 
-      const int len = static_cast<int>(message.length());
-      if (write(sockfd_, message.c_str(), len) != len) {
+      const auto len = static_cast<size_t>(message.length());
+      if (write(sockfd_, message.c_str(), len) != static_cast<ssize_t>(len)) {
         GTEST_LOG_(WARNING)
             << "stream_result_to: failed to stream to "
             << host_name_ << ":" << port_num_;
@@ -1922,7 +1926,8 @@ std::string UnitTestOptions::GetOutputFormat() {
   const char* const colon = strchr(gtest_output_flag, ':');
   return (colon == nullptr)
              ? std::string(gtest_output_flag)
-             : std::string(gtest_output_flag, colon - gtest_output_flag);
+             : std::string(gtest_output_flag,
+                           static_cast<size_t>(colon - gtest_output_flag));
 }
 
 // Returns the name of the requested output file, or the default if none
@@ -2716,9 +2721,10 @@ std::string CreateUnifiedDiff(const std::vector<std::string>& left,
     for (; edit_i < edits.size(); ++edit_i) {
       if (n_suffix >= context) {
         // Continue only if the next hunk is very close.
-        std::vector<EditType>::const_iterator it = edits.begin() + edit_i;
+        auto it = edits.begin() + static_cast<int>(edit_i);
         while (it != edits.end() && *it == kMatch) ++it;
-        if (it == edits.end() || (it - edits.begin()) - edit_i >= context) {
+        if (it == edits.end() ||
+            static_cast<size_t>(it - edits.begin()) - edit_i >= context) {
           // There is no next edit or it is too far away.
           break;
         }
@@ -3165,7 +3171,7 @@ AssertionResult HRESULTFailureHelper(const char* expr,
   char error_text[kBufSize] = { '\0' };
   DWORD message_length = ::FormatMessageA(kFlags,
                                           0,   // no source, we're asking system
-                                          hr,  // the error
+                                          static_cast<DWORD>(hr),  // the error
                                           0,   // no line width restrictions
                                           error_text,  // output buffer
                                           kBufSize,    // buf size
@@ -3243,7 +3249,7 @@ inline UInt32 ChopLowBits(UInt32* bits, int n) {
 // to "(Invalid Unicode 0xXXXXXXXX)".
 std::string CodePointToUtf8(UInt32 code_point) {
   if (code_point > kMaxCodePoint4) {
-    return "(Invalid Unicode 0x" + String::FormatHexInt(code_point) + ")";
+    return "(Invalid Unicode 0x" + String::FormatHexUInt32(code_point) + ")";
   }
 
   char str[5];  // Big enough for the largest valid code point.
@@ -3284,12 +3290,15 @@ inline bool IsUtf16SurrogatePair(wchar_t first, wchar_t second) {
 // Creates a Unicode code point from UTF16 surrogate pair.
 inline UInt32 CreateCodePointFromUtf16SurrogatePair(wchar_t first,
                                                     wchar_t second) {
+  const auto first_u = static_cast<UInt32>(first);
+  const auto second_u = static_cast<UInt32>(second);
   const UInt32 mask = (1 << 10) - 1;
-  return (sizeof(wchar_t) == 2) ?
-      (((first & mask) << 10) | (second & mask)) + 0x10000 :
-      // This function should not be called when the condition is
-      // false, but we provide a sensible default in case it is.
-      static_cast<UInt32>(first);
+  return (sizeof(wchar_t) == 2)
+             ? (((first_u & mask) << 10) | (second_u & mask)) + 0x10000
+             :
+             // This function should not be called when the condition is
+             // false, but we provide a sensible default in case it is.
+             first_u;
 }
 
 // Converts a wide string to a narrow string in UTF-8 encoding.
@@ -3446,10 +3455,15 @@ std::string String::FormatIntWidth2(int value) {
 }
 
 // Formats an int value as "%X".
-std::string String::FormatHexInt(int value) {
+std::string String::FormatHexUInt32(UInt32 value) {
   std::stringstream ss;
   ss << std::hex << std::uppercase << value;
   return ss.str();
+}
+
+// Formats an int value as "%X".
+std::string String::FormatHexInt(int value) {
+  return FormatHexUInt32(static_cast<UInt32>(value));
 }
 
 // Formats a byte as "%02X".
@@ -3468,7 +3482,7 @@ std::string StringStreamToString(::std::stringstream* ss) {
   const char* const end = start + str.length();
 
   std::string result;
-  result.reserve(2 * (end - start));
+  result.reserve(static_cast<size_t>(2 * (end - start)));
   for (const char* ch = start; ch != end; ++ch) {
     if (*ch == '\0') {
       result += "\\0";  // Replaces NUL with "\\0";
@@ -3512,7 +3526,7 @@ TestResult::~TestResult() {
 const TestPartResult& TestResult::GetTestPartResult(int i) const {
   if (i < 0 || i >= total_part_count())
     internal::posix::Abort();
-  return test_part_results_.at(i);
+  return test_part_results_.at(static_cast<size_t>(i));
 }
 
 // Returns the i-th test property. i can range from 0 to
@@ -3521,7 +3535,7 @@ const TestPartResult& TestResult::GetTestPartResult(int i) const {
 const TestProperty& TestResult::GetTestProperty(int i) const {
   if (i < 0 || i >= test_property_count())
     internal::posix::Abort();
-  return test_properties_.at(i);
+  return test_properties_.at(static_cast<size_t>(i));
 }
 
 // Clears the test part results.
@@ -4252,14 +4266,14 @@ TestSuite::~TestSuite() {
 // total_test_count() - 1. If i is not in that range, returns NULL.
 const TestInfo* TestSuite::GetTestInfo(int i) const {
   const int index = GetElementOr(test_indices_, i, -1);
-  return index < 0 ? nullptr : test_info_list_[index];
+  return index < 0 ? nullptr : test_info_list_[static_cast<size_t>(index)];
 }
 
 // Returns the i-th test among all the tests. i can range from 0 to
 // total_test_count() - 1. If i is not in that range, returns NULL.
 TestInfo* TestSuite::GetMutableTestInfo(int i) {
   const int index = GetElementOr(test_indices_, i, -1);
-  return index < 0 ? nullptr : test_info_list_[index];
+  return index < 0 ? nullptr : test_info_list_[static_cast<size_t>(index)];
 }
 
 // Adds a test to this test suite.  Will delete the test upon
@@ -4877,7 +4891,7 @@ void TestEventRepeater::Append(TestEventListener *listener) {
 TestEventListener* TestEventRepeater::Release(TestEventListener *listener) {
   for (size_t i = 0; i < listeners_.size(); ++i) {
     if (listeners_[i] == listener) {
-      listeners_.erase(listeners_.begin() + i);
+      listeners_.erase(listeners_.begin() + static_cast<int>(i));
       return listener;
     }
   }
@@ -4897,14 +4911,14 @@ void TestEventRepeater::Name(const Type& parameter) { \
 }
 // This defines a member that forwards the call to all listeners in reverse
 // order.
-#define GTEST_REVERSE_REPEATER_METHOD_(Name, Type) \
-void TestEventRepeater::Name(const Type& parameter) { \
-  if (forwarding_enabled_) { \
-    for (int i = static_cast<int>(listeners_.size()) - 1; i >= 0; i--) { \
-      listeners_[i]->Name(parameter); \
-    } \
-  } \
-}
+#define GTEST_REVERSE_REPEATER_METHOD_(Name, Type)      \
+  void TestEventRepeater::Name(const Type& parameter) { \
+    if (forwarding_enabled_) {                          \
+      for (size_t i = listeners_.size(); i != 0; i--) { \
+        listeners_[i - 1]->Name(parameter);             \
+      }                                                 \
+    }                                                   \
+  }
 
 GTEST_REPEATER_METHOD_(OnTestProgramStart, UnitTest)
 GTEST_REPEATER_METHOD_(OnEnvironmentsSetUpStart, UnitTest)
@@ -4941,8 +4955,8 @@ void TestEventRepeater::OnTestIterationStart(const UnitTest& unit_test,
 void TestEventRepeater::OnTestIterationEnd(const UnitTest& unit_test,
                                            int iteration) {
   if (forwarding_enabled_) {
-    for (int i = static_cast<int>(listeners_.size()) - 1; i >= 0; i--) {
-      listeners_[i]->OnTestIterationEnd(unit_test, iteration);
+    for (size_t i = listeners_.size(); i > 0; i--) {
+      listeners_[i - 1]->OnTestIterationEnd(unit_test, iteration);
     }
   }
 }
@@ -5545,7 +5559,7 @@ static std::string FormatEpochTimeInMillisAsRFC3339(TimeInMillis ms) {
       String::FormatIntWidth2(time_struct.tm_sec) + "Z";
 }
 
-static inline std::string Indent(int width) {
+static inline std::string Indent(size_t width) {
   return std::string(width, ' ');
 }
 
@@ -6202,8 +6216,7 @@ void UnitTest::AddTestPartResult(
   if (impl_->gtest_trace_stack().size() > 0) {
     msg << "\n" << GTEST_NAME_ << " trace:";
 
-    for (int i = static_cast<int>(impl_->gtest_trace_stack().size());
-         i > 0; --i) {
+    for (size_t i = impl_->gtest_trace_stack().size(); i > 0; --i) {
       const internal::TraceInfo& trace = impl_->gtest_trace_stack()[i - 1];
       msg << "\n" << internal::FormatFileLocation(trace.file, trace.line)
           << " " << trace.message;
@@ -6703,8 +6716,8 @@ bool UnitTestImpl::RunAllTests() {
   // when we are inside the subprocess of a death test.
   const int repeat = in_subprocess_for_death_test ? 1 : GTEST_FLAG(repeat);
   // Repeats forever if the repeat count is negative.
-  const bool forever = repeat < 0;
-  for (int i = 0; forever || i != repeat; i++) {
+  const bool gtest_repeat_forever = repeat < 0;
+  for (int i = 0; gtest_repeat_forever || i != repeat; i++) {
     // We want to preserve failures generated by ad-hoc test
     // assertions executed before RUN_ALL_TESTS().
     ClearNonAdHocTestResult();
@@ -6713,7 +6726,7 @@ bool UnitTestImpl::RunAllTests() {
 
     // Shuffles test suites and tests if requested.
     if (has_tests_to_run && GTEST_FLAG(shuffle)) {
-      random()->Reseed(random_seed_);
+      random()->Reseed(static_cast<UInt32>(random_seed_));
       // This should be done before calling OnTestIterationStart(),
       // such that a test event listener can see the actual test order
       // in the event.
@@ -8939,7 +8952,7 @@ static pid_t ExecDeathTestSpawnChild(char* const* argv, int close_fd) {
 
   if (!use_fork) {
     static const bool stack_grows_down = StackGrowsDown();
-    const size_t stack_size = getpagesize();
+    const auto stack_size = static_cast<size_t>(getpagesize());
     // MMAP_ANONYMOUS is not defined on Mac, so we use MAP_ANON instead.
     void* const stack = mmap(nullptr, stack_size, PROT_READ | PROT_WRITE,
                              MAP_ANON | MAP_PRIVATE, -1, 0);
@@ -8955,8 +8968,9 @@ static pid_t ExecDeathTestSpawnChild(char* const* argv, int close_fd) {
     void* const stack_top =
         static_cast<char*>(stack) +
             (stack_grows_down ? stack_size - kMaxStackAlignment : 0);
-    GTEST_DEATH_TEST_CHECK_(stack_size > kMaxStackAlignment &&
-        reinterpret_cast<intptr_t>(stack_top) % kMaxStackAlignment == 0);
+    GTEST_DEATH_TEST_CHECK_(
+        static_cast<size_t>(stack_size) > kMaxStackAlignment &&
+        reinterpret_cast<uintptr_t>(stack_top) % kMaxStackAlignment == 0);
 
     child_pid = clone(&ExecDeathTestChildMain, stack_top, SIGCHLD, &args);
 
@@ -9386,7 +9400,7 @@ FilePath FilePath::RemoveFileName() const {
   const char* const last_sep = FindLastPathSeparator();
   std::string dir;
   if (last_sep) {
-    dir = std::string(c_str(), last_sep + 1 - c_str());
+    dir = std::string(c_str(), static_cast<size_t>(last_sep + 1 - c_str()));
   } else {
     dir = kCurrentDirectoryString;
   }
@@ -9807,7 +9821,7 @@ T ReadProcFileField(const std::string& filename, int field) {
 size_t GetThreadCount() {
   const std::string filename =
       (Message() << "/proc/" << getpid() << "/stat").GetString();
-  return ReadProcFileField<int>(filename, 19);
+  return ReadProcFileField<size_t>(filename, 19);
 }
 
 #elif GTEST_OS_MAC
@@ -9865,7 +9879,7 @@ size_t GetThreadCount() {
   if (sysctl(mib, miblen, &info, &size, NULL, 0)) {
     return 0;
   }
-  return KP_NLWP(info);
+  return static_cast<size_t>(KP_NLWP(info));
 }
 #elif GTEST_OS_OPENBSD
 
@@ -9969,7 +9983,7 @@ size_t GetThreadCount() {
 #if GTEST_IS_THREADSAFE && GTEST_OS_WINDOWS
 
 void SleepMilliseconds(int n) {
-  ::Sleep(n);
+  ::Sleep(static_cast<DWORD>(n));
 }
 
 AutoHandle::AutoHandle()
@@ -11224,7 +11238,8 @@ inline bool IsPrintableAscii(wchar_t c) {
 // which is the type of c.
 template <typename UnsignedChar, typename Char>
 static CharFormat PrintAsCharLiteralTo(Char c, ostream* os) {
-  switch (static_cast<wchar_t>(c)) {
+  wchar_t w_c = static_cast<wchar_t>(c);
+  switch (w_c) {
     case L'\0':
       *os << "\\0";
       break;
@@ -11256,7 +11271,7 @@ static CharFormat PrintAsCharLiteralTo(Char c, ostream* os) {
       *os << "\\v";
       break;
     default:
-      if (IsPrintableAscii(c)) {
+      if (IsPrintableAscii(w_c)) {
         *os << static_cast<char>(c);
         return kAsIs;
       } else {
@@ -11316,7 +11331,7 @@ void PrintCharAndCodeTo(Char c, ostream* os) {
   if (format == kHexEscape || (1 <= c && c <= 9)) {
     // Do nothing.
   } else {
-    *os << ", 0x" << String::FormatHexInt(static_cast<UnsignedChar>(c));
+    *os << ", 0x" << String::FormatHexInt(static_cast<int>(c));
   }
   *os << ")";
 }
@@ -11589,7 +11604,7 @@ const TestPartResult& TestPartResultArray::GetTestPartResult(int index) const {
     internal::posix::Abort();
   }
 
-  return array_[index];
+  return array_[static_cast<size_t>(index)];
 }
 
 // Returns the number of TestPartResult objects in the array.

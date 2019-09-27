@@ -346,6 +346,15 @@ if(OS_MACOSX)
     set(CEF_SANDBOX_LIB_DEBUG "${CEF_BINARY_DIR_DEBUG}/cef_sandbox.a")
     set(CEF_SANDBOX_LIB_RELEASE "${CEF_BINARY_DIR_RELEASE}/cef_sandbox.a")
   endif()
+
+  # CEF Helper app suffixes.
+  # Format is "<name suffix>:<target suffix>:<plist suffix>".
+  set(CEF_HELPER_APP_SUFFIXES
+    "::"
+    " (GPU):_gpu:.gpu"
+    " (Plugin):_plugin:.plugin"
+    " (Renderer):_renderer:.renderer"
+    )
 endif()
 
 
@@ -492,7 +501,10 @@ if(OS_WINDOWS)
     # Libraries required by cef_sandbox.lib.
     set(CEF_SANDBOX_STANDARD_LIBS
       dbghelp.lib
+      PowrProf.lib
+      Propsys.lib
       psapi.lib
+      SetupAPI.lib
       version.lib
       wbemuuid.lib
       winmm.lib

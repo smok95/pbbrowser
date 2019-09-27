@@ -1,4 +1,4 @@
-# Install script for directory: E:/Projects/pbbrowser/pbbrowser_cef/tests/pbbrowser
+# Install script for directory: E:/dev/pbbrowser/pbbrowser_cef/tests/pbbrowser
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
