@@ -37,7 +37,6 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("E:/dev/pbbrowser/pbbrowser_cef/libcef_dll_wrapper/cmake_install.cmake")
   include("E:/dev/pbbrowser/pbbrowser_cef/tests/pbbrowser/cmake_install.cmake")
   include("E:/dev/pbbrowser/pbbrowser_cef/tests/gtest/cmake_install.cmake")
-  include("E:/dev/pbbrowser/pbbrowser_cef/tests/ceftests/cmake_install.cmake")
   include("E:/dev/pbbrowser/pbbrowser_cef/tests/cefclient/cmake_install.cmake")
 
 endif()

@@ -128,11 +128,21 @@ bool PBBrowserHandler::OnJSDialog(CefRefPtr<CefBrowser> browser,
 	{
 	case JSDIALOGTYPE_ALERT:
 	{
-		MessageBox(browser->GetHost()->GetWindowHandle(), message_text.c_str(), L"Tier2 Submit", MB_OK);		
+		MessageBox(browser->GetHost()->GetWindowHandle(), message_text.c_str(), L"PBBrowser", MB_OK);		
 		callback->Continue(true, "");
 
-		HWND parent_win_ = GetAncestor(browser->GetHost()->GetWindowHandle(), GA_ROOT);
-		EnableWindow(parent_win_, TRUE);
+		/*	2019.09.27 kim,jk
+		MessageBox사용시 alert표시 후 창을 닫으면 웹페이지 화면내의 input컨트롤이 입력이 되지 않는 문제가 발생함.
+		다른 프로세스창으로 포커스를 줬다가 다시 돌아오면 정상적으로 동작하는 것으로 확인되었음.
+		아래는 편법을 이용한 코드로 작업표시줄로 포커스를 설정했다가 다시 브라우저로 포커스를 설정한다.
+		*/
+		if (HWND hwndTaskbar = FindWindow(L"Shell_TrayWnd", NULL)) {
+			SetFocus(hwndTaskbar);
+
+			if (HWND hParent = GetAncestor(browser->GetHost()->GetWindowHandle(), GA_ROOT))
+				SetFocus(hParent);
+		}
+		
 		return true;
 	}
 	}

@@ -13,6 +13,8 @@
 #include "include/wrapper/cef_helpers.h"
 #include "pbbrowser_handler.h"
 
+CefSize default_size(800, 600);
+
 namespace {
 
 // When using the Views framework this object provides the delegate
@@ -44,7 +46,7 @@ class PBBrowserWindowDelegate : public CefWindowDelegate {
   }
 
   CefSize GetPreferredSize(CefRefPtr<CefView> view) OVERRIDE {
-    return CefSize(800, 600);
+	  return default_size;
   }
 
  private:
@@ -79,14 +81,14 @@ void PBBrowserApp::OnContextInitialized() {
 
   // Specify CEF browser settings here.
   CefBrowserSettings browser_settings;
-
+  
   std::string url;
 
   // Check if a "--url=" value was provided via the command-line. If so, use
   // that instead of the default URL.
   url = command_line->GetSwitchValue("url");
   if (url.empty())
-    url = "http://www.google.com";
+    url = "http://www.koscom.co.kr";
 
   if (use_views) {
     // Create the BrowserView.
@@ -104,6 +106,9 @@ void PBBrowserApp::OnContextInitialized() {
     // CreateWindowEx().
     window_info.SetAsPopup(NULL, "PB+ Browser");
 #endif
+
+	window_info.width = default_size.width;
+	window_info.height = default_size.height;
 
     // Create the first browser window.
     CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,

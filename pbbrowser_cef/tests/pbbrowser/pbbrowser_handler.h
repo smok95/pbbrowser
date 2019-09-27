@@ -46,6 +46,7 @@ class PBBrowserHandler : public CefClient,
                            const CefString& errorText,
                            const CefString& failedUrl) OVERRIDE;
 
+  // cef의 기본 alert기능을 사용할때 발생하는 문제(메시지 내용이 긴 경우 잘려 표시되지 않는 현상)로 JSDialogHandler 직접 구현, 2019.09.27 kim,jk 
   // CefJSDialogHandler methods:
   virtual CefRefPtr<CefJSDialogHandler> GetJSDialogHandler() OVERRIDE { return this; }
   virtual bool OnJSDialog(CefRefPtr<CefBrowser> browser,
