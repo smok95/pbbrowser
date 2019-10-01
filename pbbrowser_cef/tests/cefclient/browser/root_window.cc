@@ -11,7 +11,7 @@ namespace client {
 
 RootWindowConfig::RootWindowConfig()
     : always_on_top(false),
-      with_controls(true),
+      with_controls(false),
       with_osr(false),
       with_extension(false),
       initially_hidden(false),

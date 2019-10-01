@@ -291,7 +291,7 @@ set(CEFCLIENT_WINDOWS_BROWSER_SRCS
 source_group(cefclient\\\\browser FILES ${CEFCLIENT_WINDOWS_BROWSER_SRCS})
 
 set(CEFCLIENT_WINDOWS_RESOURCES_WIN_SRCS
-  resources/win/cefclient.exe.manifest
+  resources/win/pbbrowser.exe.manifest
   resources/win/cefclient.ico
   resources/win/cefclient.rc
   resources/win/small.ico
@@ -383,7 +383,7 @@ set(CEFCLIENT_RESOURCES_SRCS
 #
 
 # Target executable names.
-set(CEF_TARGET "cefclient")
+set(CEF_TARGET "pbbrowser")
 if(OS_MACOSX)
   set(CEF_HELPER_TARGET "cefclient_Helper")
   set(CEF_HELPER_OUTPUT_NAME "cefclient Helper")

@@ -69,11 +69,11 @@
 # Linux platform or a 64-bit CEF binary distribution on a 64-bit Linux platform:
 #   Using Unix Makefiles:
 #     > cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ..
-#     > make -j4 cefclient pbbrowser
+#     > make -j4 cefclient 
 #
 #   Using Ninja:
 #     > cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug ..
-#     > ninja cefclient pbbrowser
+#     > ninja cefclient 
 #
 # To perform a Mac OS X build using a 64-bit CEF binary distribution:
 #   Using the Xcode IDE:
@@ -82,7 +82,7 @@
 #
 #   Using Ninja:
 #     > cmake -G "Ninja" -DPROJECT_ARCH="x86_64" -DCMAKE_BUILD_TYPE=Debug ..
-#     > ninja cefclient pbbrowser
+#     > ninja cefclient 
 #
 # To perform a Windows build using a 32-bit CEF binary distribution:
 #   Using the Visual Studio 2015 IDE:
@@ -93,7 +93,7 @@
 #     (this path may be different depending on your Visual Studio installation)
 #     > "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\vcvars32.bat"
 #     > cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug ..
-#     > ninja cefclient pbbrowser
+#     > ninja cefclient 
 #
 # To perform a Windows build using a 64-bit CEF binary distribution:
 #   Using the Visual Studio 2015 IDE:
@@ -104,7 +104,7 @@
 #     (this path may be different depending on your Visual Studio installation)
 #     > "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\vcvars64.bat"
 #     > cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug ..
-#     > ninja cefclient pbbrowser
+#     > ninja cefclient 
 
 #
 # Global setup.
@@ -148,7 +148,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CEF_ROOT}/cmake")
 # B. Copy this file to "myproject/CMakeLists.txt" as the top-level CMake
 #    configuration.
 # C. Create the target-specific "myproject/mytarget/CMakeLists.txt" file for
-#    your application. See the included cefclient and pbbrowser CMakeLists.txt
+#    your application. See the included cefclient and  CMakeLists.txt
 #    files as an example.
 # D. Comment in these lines:
 #
@@ -170,7 +170,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CEF_ROOT}/cmake")
 #    configuration.
 # C. Copy the cmake/FindCEF.cmake file to "myproject/cmake/FindCEF.cmake".
 # D. Create the target-specific "myproject/mytarget/CMakeLists.txt" file for
-#    your application. See the included cefclient and pbbrowser CMakeLists.txt
+#    your application. See the included cefclient and  CMakeLists.txt
 #    files as an example.
 # E. Set the CEF_ROOT environment variable before executing CMake. For example:
 #    > set CEF_ROOT=c:\path\to\cef_binary_3.2704.xxxx.gyyyyyyy_windows32
@@ -199,8 +199,7 @@ add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 # Include application targets.
 # Comes from the <target>/CMakeLists.txt file in the current directory.
 # TODO: Change these lines to match your project target when you copy this file.
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests")
-  add_subdirectory(tests/pbbrowser)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests")  
   add_subdirectory(tests/gtest)
 endif()
 
