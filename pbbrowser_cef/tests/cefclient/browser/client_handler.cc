@@ -9,7 +9,9 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-
+#if defined(OS_WIN)
+#include <shellapi.h>
+#endif
 #include "include/base/cef_bind.h"
 #include "include/cef_browser.h"
 #include "include/cef_frame.h"
@@ -243,15 +245,10 @@ class ClientDownloadImageCallback : public CefDownloadImageCallback {
 ClientHandler::ClientHandler(Delegate* delegate,
                              bool is_osr,
                              const std::string& startup_url)
-    : is_osr_(is_osr),
-      startup_url_(startup_url),
-      download_favicon_images_(false),
-      delegate_(delegate),
-      browser_count_(0),
-      console_log_file_(MainContext::Get()->GetConsoleLogPath()),
-      first_console_message_(true),
-      focus_on_editable_field_(false),
-      initial_navigation_(true) {
+	: is_osr_(is_osr), startup_url_(startup_url), download_favicon_images_(false), delegate_(delegate),
+	browser_count_(0), console_log_file_(MainContext::Get()->GetConsoleLogPath()),
+	focus_on_editable_field_(false), initial_navigation_(true), use_console_log_file_(MainContext::Get()->UseConsoleLogFile()),
+	with_controls_(false) {
   DCHECK(!console_log_file_.empty());
 
 #if defined(OS_LINUX)
@@ -267,6 +264,8 @@ ClientHandler::ClientHandler(Delegate* delegate,
       CefCommandLine::GetGlobalCommandLine();
   mouse_cursor_change_disabled_ =
       command_line->HasSwitch(switches::kMouseCursorChangeDisabled);
+
+  with_controls_ = command_line->HasSwitch(switches::kShowControls);
 }
 
 void ClientHandler::DetachDelegate() {
@@ -312,24 +311,23 @@ void ClientHandler::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser,
                                         CefRefPtr<CefMenuModel> model) {
   CEF_REQUIRE_UI_THREAD();
 
-  if ((params->GetTypeFlags() & (CM_TYPEFLAG_PAGE | CM_TYPEFLAG_FRAME)) != 0) {
-    // Add a separator if the menu already has items.
-    if (model->GetCount() > 0)
-      model->AddSeparator();
+  if ((params->GetTypeFlags() & (CM_TYPEFLAG_PAGE | CM_TYPEFLAG_FRAME)) != 0) {   
+	if (MainContext::Get()->IsDebugMode()) {
+		// Add a separator if the menu already has items.
+		if (model->GetCount() > 0)
+			model->AddSeparator();
 
-    // Add DevTools items to all context menus.
-    model->AddItem(CLIENT_ID_SHOW_DEVTOOLS, "&Show DevTools");
-    model->AddItem(CLIENT_ID_CLOSE_DEVTOOLS, "Close DevTools");
-    model->AddSeparator();
-    model->AddItem(CLIENT_ID_INSPECT_ELEMENT, "Inspect Element");
+		// Add DevTools items to all context menus.
+		model->AddItem(CLIENT_ID_SHOW_DEVTOOLS, "&Show DevTools");
+		model->AddItem(CLIENT_ID_CLOSE_DEVTOOLS, "Close DevTools");
+		model->AddSeparator();
+		model->AddItem(CLIENT_ID_INSPECT_ELEMENT, "Inspect Element");
 
-    if (HasSSLInformation(browser)) {
-      model->AddSeparator();
-      model->AddItem(CLIENT_ID_SHOW_SSL_INFO, "Show SSL information");
-    }
-
-    // Test context menu features.
-    BuildTestMenu(model);
+		if (HasSSLInformation(browser)) {
+			model->AddSeparator();
+			model->AddItem(CLIENT_ID_SHOW_SSL_INFO, "Show SSL information");
+		}
+	}
   }
 
   if (delegate_)
@@ -357,7 +355,7 @@ bool ClientHandler::OnContextMenuCommand(CefRefPtr<CefBrowser> browser,
       ShowSSLInformation(browser);
       return true;
     default:  // Allow default handling, if any.
-      return ExecuteTestMenu(command_id);
+		return false;
   }
 }
 
@@ -401,6 +399,8 @@ bool ClientHandler::OnConsoleMessage(CefRefPtr<CefBrowser> browser,
                                      const CefString& message,
                                      const CefString& source,
                                      int line) {
+	if (!use_console_log_file_)
+		return false;
   CEF_REQUIRE_UI_THREAD();
 
   FILE* file = fopen(console_log_file_.c_str(), "a");
@@ -429,12 +429,6 @@ bool ClientHandler::OnConsoleMessage(CefRefPtr<CefBrowser> browser,
        << NEWLINE << "-----------------------" << NEWLINE;
     fputs(ss.str().c_str(), file);
     fclose(file);
-
-    if (first_console_message_) {
-      test_runner::Alert(
-          browser, "Console messages written to \"" + console_log_file_ + "\"");
-      first_console_message_ = false;
-    }
   }
 
   return false;
@@ -466,9 +460,14 @@ void ClientHandler::OnDownloadUpdated(
   CEF_REQUIRE_UI_THREAD();
 
   if (download_item->IsComplete()) {
+#if defined(OS_WIN)
+	  // 다운로드 완료시 파일 바로 열기(실행)
+	  ShellExecuteW(nullptr, L"open", download_item->GetFullPath().ToWString().c_str(), nullptr, nullptr, SW_SHOW);
+#else
     test_runner::Alert(browser, "File \"" +
                                     download_item->GetFullPath().ToString() +
                                     "\" downloaded successfully.");
+#endif
   }
 }
 
@@ -679,7 +678,7 @@ bool ClientHandler::OnOpenURLFromTab(
     // Handle middle-click and ctrl + left-click by opening the URL in a new
     // browser window.
     RootWindowConfig config;
-    config.with_controls = true;
+    config.with_controls = with_controls_;
     config.with_osr = is_osr();
     config.url = target_url;
     MainContext::Get()->GetRootWindowManager()->CreateRootWindow(config);
@@ -981,10 +980,10 @@ bool ClientHandler::CreatePopupWindow(CefRefPtr<CefBrowser> browser,
                                       CefBrowserSettings& settings) {
   CEF_REQUIRE_UI_THREAD();
 
+  const bool with_controls = is_devtools ? false : with_controls_;
   // The popup browser will be parented to a new native window.
   // Don't show URL bar and navigation buttons on DevTools windows.
-  MainContext::Get()->GetRootWindowManager()->CreateRootWindowAsPopup(
-      !is_devtools, is_osr(), popupFeatures, windowInfo, client, settings);
+  MainContext::Get()->GetRootWindowManager()->CreateRootWindowAsPopup(with_controls, is_osr(), popupFeatures, windowInfo, client, settings);
 
   return true;
 }
@@ -1120,41 +1119,35 @@ void ClientHandler::NotifyTakeFocus(bool next) {
     delegate_->OnTakeFocus(next);
 }
 
-void ClientHandler::BuildTestMenu(CefRefPtr<CefMenuModel> model) {
-  if (model->GetCount() > 0)
-    model->AddSeparator();
+bool ClientHandler::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& origin_url, JSDialogType dialog_type,
+	const CefString& message_text, const CefString& default_prompt_text, CefRefPtr<CefJSDialogCallback> callback, bool& suppress_message) {
 
-  // Build the sub menu.
-  CefRefPtr<CefMenuModel> submenu =
-      model->AddSubMenu(CLIENT_ID_TESTMENU_SUBMENU, "Context Menu Test");
-  submenu->AddCheckItem(CLIENT_ID_TESTMENU_CHECKITEM, "Check Item");
-  submenu->AddRadioItem(CLIENT_ID_TESTMENU_RADIOITEM1, "Radio Item 1", 0);
-  submenu->AddRadioItem(CLIENT_ID_TESTMENU_RADIOITEM2, "Radio Item 2", 0);
-  submenu->AddRadioItem(CLIENT_ID_TESTMENU_RADIOITEM3, "Radio Item 3", 0);
+#if defined(OS_WIN)
+	CEF_REQUIRE_UI_THREAD()
+	switch (dialog_type)
+	{
+	case JSDIALOGTYPE_ALERT:
+	{
+		MessageBox(browser->GetHost()->GetWindowHandle(), message_text.c_str(), L"PBBrowser", MB_OK);
+		callback->Continue(true, "");
 
-  // Check the check item.
-  if (test_menu_state_.check_item)
-    submenu->SetChecked(CLIENT_ID_TESTMENU_CHECKITEM, true);
+		/*	2019.09.27 kim,jk
+		MessageBox사용시 alert표시 후 창을 닫으면 웹페이지 화면내의 input컨트롤이 입력이 되지 않는 문제가 발생함.
+		다른 프로세스창으로 포커스를 줬다가 다시 돌아오면 정상적으로 동작하는 것으로 확인되었음.
+		아래는 편법을 이용한 코드로 작업표시줄로 포커스를 설정했다가 다시 브라우저로 포커스를 설정한다.
+		*/
+		if (HWND hwndTaskbar = FindWindow(L"Shell_TrayWnd", NULL)) {
+			SetFocus(hwndTaskbar);
 
-  // Check the selected radio item.
-  submenu->SetChecked(
-      CLIENT_ID_TESTMENU_RADIOITEM1 + test_menu_state_.radio_item, true);
-}
+			if (HWND hParent = GetAncestor(browser->GetHost()->GetWindowHandle(), GA_ROOT))
+				SetFocus(hParent);
+		}
 
-bool ClientHandler::ExecuteTestMenu(int command_id) {
-  if (command_id == CLIENT_ID_TESTMENU_CHECKITEM) {
-    // Toggle the check item.
-    test_menu_state_.check_item ^= 1;
-    return true;
-  } else if (command_id >= CLIENT_ID_TESTMENU_RADIOITEM1 &&
-             command_id <= CLIENT_ID_TESTMENU_RADIOITEM3) {
-    // Store the selected radio item.
-    test_menu_state_.radio_item = (command_id - CLIENT_ID_TESTMENU_RADIOITEM1);
-    return true;
-  }
-
-  // Allow default handling to proceed.
-  return false;
+		return true;
+	}
+	}
+#endif
+	return false;
 }
 
 }  // namespace client

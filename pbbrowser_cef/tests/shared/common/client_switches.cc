@@ -43,6 +43,8 @@ const char kSslClientCertificate[] = "ssl-client-certificate";
 const char kCRLSetsPath[] = "crl-sets-path";
 const char kLoadExtension[] = "load-extension";
 const char kNoActivate[] = "no-activate";
+const char kConsoleLogFile[] = "console-log-file";
+const char kDebugMode[] = "debug";
 
 }  // namespace switches
 }  // namespace client

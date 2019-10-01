@@ -37,6 +37,8 @@ extern const char kSslClientCertificate[];
 extern const char kCRLSetsPath[];
 extern const char kLoadExtension[];
 extern const char kNoActivate[];
+extern const char kConsoleLogFile[];	// console.log message를 파일에 기록, 2019.10.01 kim,jk
+extern const char kDebugMode[];			// debug mode, 2019.10.01 kim,jk
 
 }  // namespace switches
 }  // namespace client

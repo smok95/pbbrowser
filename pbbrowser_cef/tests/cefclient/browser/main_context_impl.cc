@@ -42,12 +42,8 @@ MainContextImpl::MainContextImpl(CefRefPtr<CefCommandLine> command_line,
                                  bool terminate_when_all_windows_closed)
     : command_line_(command_line),
       terminate_when_all_windows_closed_(terminate_when_all_windows_closed),
-      initialized_(false),
-      shutdown_(false),
-      background_color_(0),
-      browser_background_color_(0),
-      windowless_frame_rate_(0),
-      use_views_(false) {
+      initialized_(false), shutdown_(false), background_color_(0), browser_background_color_(0),
+      windowless_frame_rate_(0), use_views_(false), use_console_log_file_(false), is_debug_mode_(false) {
   DCHECK(command_line_.get());
 
   // Set the main URL.
@@ -135,6 +131,9 @@ MainContextImpl::MainContextImpl(CefRefPtr<CefCommandLine> command_line,
     // Linux.
     CefRegisterWidevineCdm(cdm_path, NULL);
   }
+
+  use_console_log_file_ = command_line_->HasSwitch(switches::kConsoleLogFile);
+  is_debug_mode_ = command_line_->HasSwitch(switches::kDebugMode);
 }
 
 MainContextImpl::~MainContextImpl() {
@@ -245,6 +244,14 @@ void MainContextImpl::Shutdown() {
   CefShutdown();
 
   shutdown_ = true;
+}
+
+bool MainContextImpl::UseConsoleLogFile() {
+	return use_console_log_file_;
+}
+
+bool MainContextImpl::IsDebugMode() {
+	return is_debug_mode_;
 }
 
 }  // namespace client

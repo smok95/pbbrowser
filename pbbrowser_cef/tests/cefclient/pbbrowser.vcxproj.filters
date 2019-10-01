@@ -405,6 +405,7 @@
     <ClInclude Include="E:\dev\pbbrowser\pbbrowser_cef\tests\shared\browser\util_win.h">
       <Filter>shared\browser</Filter>
     </ClInclude>
+    <ClInclude Include="resources\win\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="E:\dev\pbbrowser\pbbrowser_cef\tests\cefclient\CMakeLists.txt" />

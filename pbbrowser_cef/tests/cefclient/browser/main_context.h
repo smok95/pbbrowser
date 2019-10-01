@@ -27,7 +27,7 @@ class MainContext {
   virtual std::string GetConsoleLogPath() = 0;
 
   // Returns the full path to |file_name|.
-  virtual std::string GetDownloadPath(const std::string& file_name) = 0;
+  virtual std::wstring GetDownloadPath(const std::wstring& file_name) = 0;
 
   // Returns the app working directory including trailing path separator.
   virtual std::string GetAppWorkingDirectory() = 0;
@@ -55,6 +55,11 @@ class MainContext {
   // Returns the object used to create/manage RootWindow instances.
   virtual RootWindowManager* GetRootWindowManager() = 0;
 
+  // console.log message 파일기록 여부
+  virtual bool UseConsoleLogFile() = 0;
+
+  // debug mode (dev mode)
+  virtual bool IsDebugMode() = 0;
  protected:
   MainContext();
   virtual ~MainContext();

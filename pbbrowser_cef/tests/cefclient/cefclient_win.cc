@@ -4,6 +4,7 @@
 
 #include <windows.h>
 
+#include "include/cef_version.h"
 #include "include/base/cef_scoped_ptr.h"
 #include "include/cef_command_line.h"
 #include "include/cef_sandbox_win.h"
@@ -75,6 +76,35 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
 #if !defined(CEF_USE_SANDBOX)
   settings.no_sandbox = true;
 #endif
+
+  // log level 설정, 스위치값이 없으면 로그비활성화, 2019.10.01 kim,jk
+  if (!command_line->HasSwitch("log-serverity"))
+	  settings.log_severity = LOGSEVERITY_DISABLE;
+
+  // 현재 OS설정언어에 맞게 언어설정 변경, 2019.10.01 kim,jk
+  {
+	  // set language based on user's default lang
+	  LANGID langId = GetUserDefaultLangID();
+
+	  wchar_t languageCode[100];
+	  GetLocaleInfo(langId, LOCALE_SISO639LANGNAME, languageCode, 100);
+	  wchar_t countryCode[100];
+	  GetLocaleInfo(langId, LOCALE_SISO3166CTRYNAME, countryCode, 100);
+
+	  std::wstring lang(languageCode);
+	  lang += L"_" + std::wstring(countryCode);
+
+	  CefString(&settings.locale).FromWString(lang);
+  }
+
+  // user agent 설정, 2019.10.01 kim,jk (product_version값이 userAgent에 추가됨)
+  {
+	  // 기존 product_version값(Chrome/버전값)에 PBBrowser를 추가
+	  wchar_t productVer[100] = { 0, };
+	  const wchar_t szPBBrowser[] = L"PBBrowser";
+	  wsprintfW(productVer, L"Chrome/%d.%d.%d.%d %s", CHROME_VERSION_MAJOR, CHROME_VERSION_MINOR, CHROME_VERSION_BUILD, CHROME_VERSION_PATCH, szPBBrowser);
+	  CefString(&settings.product_version).FromWString(productVer);
+  }
 
   // Applications should specify a unique GUID here to enable trusted downloads.
   CefString(&settings.application_client_id_for_file_scanning)

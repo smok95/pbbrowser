@@ -23,7 +23,7 @@ class MainContextImpl : public MainContext {
 
   // MainContext members.
   std::string GetConsoleLogPath() OVERRIDE;
-  std::string GetDownloadPath(const std::string& file_name) OVERRIDE;
+  std::wstring GetDownloadPath(const std::wstring& file_name) OVERRIDE;
   std::string GetAppWorkingDirectory() OVERRIDE;
   std::string GetMainURL() OVERRIDE;
   cef_color_t GetBackgroundColor() OVERRIDE;
@@ -34,6 +34,8 @@ class MainContextImpl : public MainContext {
   void PopulateBrowserSettings(CefBrowserSettings* settings) OVERRIDE;
   void PopulateOsrSettings(OsrRendererSettings* settings) OVERRIDE;
   RootWindowManager* GetRootWindowManager() OVERRIDE;
+  bool UseConsoleLogFile() OVERRIDE;
+  bool IsDebugMode() OVERRIDE;
 
   // Initialize CEF and associated main context state. This method must be
   // called on the same thread that created this object.
@@ -72,6 +74,8 @@ class MainContextImpl : public MainContext {
   int windowless_frame_rate_;
   bool use_views_;
   bool touch_events_enabled_;
+  bool use_console_log_file_;
+  bool is_debug_mode_;
 
   scoped_ptr<RootWindowManager> root_window_manager_;
 

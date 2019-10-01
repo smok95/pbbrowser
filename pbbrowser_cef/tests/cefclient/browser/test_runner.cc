@@ -123,7 +123,7 @@ void RunRequestTest(CefRefPtr<CefBrowser> browser) {
 
 void RunNewWindowTest(CefRefPtr<CefBrowser> browser) {
   RootWindowConfig config;
-  config.with_controls = true;
+  config.with_controls = false;
   config.with_osr = browser->GetHost()->IsWindowRenderingDisabled();
   MainContext::Get()->GetRootWindowManager()->CreateRootWindow(config);
 }
@@ -311,8 +311,8 @@ void EndTracing(CefRefPtr<CefBrowser> browser) {
     }
 
     void RunDialog() {
-      static const char kDefaultFileName[] = "trace.txt";
-      std::string path = MainContext::Get()->GetDownloadPath(kDefaultFileName);
+      static const TCHAR kDefaultFileName[] = L"trace.txt";
+      std::wstring path = MainContext::Get()->GetDownloadPath(kDefaultFileName);
       if (path.empty())
         path = kDefaultFileName;
 
@@ -367,8 +367,8 @@ void PrintToPDF(CefRefPtr<CefBrowser> browser) {
     }
 
     void RunDialog() {
-      static const char kDefaultFileName[] = "output.pdf";
-      std::string path = MainContext::Get()->GetDownloadPath(kDefaultFileName);
+      static const TCHAR kDefaultFileName[] = L"output.pdf";
+      std::wstring path = MainContext::Get()->GetDownloadPath(kDefaultFileName);
       if (path.empty())
         path = kDefaultFileName;
 

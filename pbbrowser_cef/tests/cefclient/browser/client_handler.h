@@ -25,17 +25,18 @@ class ClientDownloadImageCallback;
 
 // Client handler abstract base class. Provides common functionality shared by
 // all concrete client handler implementations.
-class ClientHandler : public CefClient,
-                      public CefContextMenuHandler,
-                      public CefDisplayHandler,
-                      public CefDownloadHandler,
-                      public CefDragHandler,
-                      public CefFocusHandler,
-                      public CefKeyboardHandler,
-                      public CefLifeSpanHandler,
-                      public CefLoadHandler,
-                      public CefRequestHandler,
-                      public CefResourceRequestHandler {
+class ClientHandler :	public CefClient,
+						public CefContextMenuHandler,
+						public CefDisplayHandler,
+						public CefDownloadHandler,
+						public CefDragHandler,
+						public CefFocusHandler,
+						public CefKeyboardHandler,
+						public CefLifeSpanHandler,
+						public CefLoadHandler,
+						public CefRequestHandler,
+						public CefResourceRequestHandler,
+						public CefJSDialogHandler {
  public:
   // Implement this interface to receive notification of ClientHandler
   // events. The methods of this class will be called on the main thread unless
@@ -118,10 +119,25 @@ class ClientHandler : public CefClient,
   CefRefPtr<CefDialogHandler> GetDialogHandler() OVERRIDE {
     return dialog_handler_;
   }
-  CefRefPtr<CefJSDialogHandler> GetJSDialogHandler() OVERRIDE {
-    return dialog_handler_;
-  }
 #endif
+
+  CefRefPtr<CefJSDialogHandler> GetJSDialogHandler() OVERRIDE {
+#if defined(OS_LINUX)
+	  return dialog_hadler_;
+#else
+	  return this;
+#endif
+  }
+
+  // cef의 기본 alert기능을 사용할때 발생하는 문제(메시지 내용이 긴 경우 잘려 표시되지 않는 현상)로 JSDialogHandler 직접 구현, 2019.10.01 kim,jk 
+  // CefJSdialoghandler methods
+  bool OnJSDialog(CefRefPtr<CefBrowser> browser,
+	  const CefString& origin_url,
+	  JSDialogType dialog_type,
+	  const CefString& message_text,
+	  const CefString& default_prompt_text,
+	  CefRefPtr<CefJSDialogCallback> callback,
+	  bool& suppress_message) OVERRIDE;  
 
   // CefContextMenuHandler methods
   void OnBeforeContextMenu(CefRefPtr<CefBrowser> browser,
@@ -336,10 +352,6 @@ class ClientHandler : public CefClient,
   void NotifyDraggableRegions(const std::vector<CefDraggableRegion>& regions);
   void NotifyTakeFocus(bool next);
 
-  // Test context menu creation.
-  void BuildTestMenu(CefRefPtr<CefMenuModel> model);
-  bool ExecuteTestMenu(int command_id);
-
   // THREAD SAFE MEMBERS
   // The following members may be accessed from any thread.
 
@@ -389,7 +401,7 @@ class ClientHandler : public CefClient,
 
   // Console logging state.
   const std::string console_log_file_;
-  bool first_console_message_;
+  const bool use_console_log_file_;
 
   // True if an editable field currently has focus.
   bool focus_on_editable_field_;
@@ -400,6 +412,9 @@ class ClientHandler : public CefClient,
   // Set of Handlers registered with the message router.
   MessageHandlerSet message_handler_set_;
 
+  // 컨트롤(뒤로가기,앞으로,주소입력창 등) 표시 여부
+  bool with_controls_;
+    
   DISALLOW_COPY_AND_ASSIGN(ClientHandler);
 };
 
