@@ -31,7 +31,7 @@ void BrowserWindowStdWin::CreateBrowser(
     // Don't activate the browser window on creation.
     window_info.ex_style |= WS_EX_NOACTIVATE;
   }
-
+  
   CefBrowserHost::CreateBrowser(window_info, client_handler_,
                                 client_handler_->startup_url(), settings,
                                 extra_info, request_context);

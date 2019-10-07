@@ -979,7 +979,7 @@ bool ClientHandler::CreatePopupWindow(CefRefPtr<CefBrowser> browser,
                                       CefRefPtr<CefClient>& client,
                                       CefBrowserSettings& settings) {
   CEF_REQUIRE_UI_THREAD();
-
+  
   const bool with_controls = is_devtools ? false : with_controls_;
   // The popup browser will be parented to a new native window.
   // Don't show URL bar and navigation buttons on DevTools windows.
@@ -1124,13 +1124,25 @@ bool ClientHandler::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& o
 
 #if defined(OS_WIN)
 	CEF_REQUIRE_UI_THREAD()
+	const HWND hHostWnd = browser->GetHost()->GetWindowHandle();
+	bool bConvertFocus = false;
 	switch (dialog_type)
 	{
 	case JSDIALOGTYPE_ALERT:
 	{
-		MessageBox(browser->GetHost()->GetWindowHandle(), message_text.c_str(), L"PBBrowser", MB_OK);
+		MessageBox(hHostWnd, message_text.c_str(), L"PBBrowser", MB_OK);
 		callback->Continue(true, "");
+		bConvertFocus = true;
+	}break;
+	case JSDIALOGTYPE_CONFIRM:
+	{
+		const bool bSuccess = MessageBox(hHostWnd, message_text.c_str(), L"PBBrowser", MB_YESNO) == IDYES;
+		callback->Continue(bSuccess, "");
+		bConvertFocus = true;
+	}break;
+	}
 
+	if (bConvertFocus) {
 		/*	2019.09.27 kim,jk
 		MessageBox사용시 alert표시 후 창을 닫으면 웹페이지 화면내의 input컨트롤이 입력이 되지 않는 문제가 발생함.
 		다른 프로세스창으로 포커스를 줬다가 다시 돌아오면 정상적으로 동작하는 것으로 확인되었음.
@@ -1142,10 +1154,9 @@ bool ClientHandler::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& o
 			if (HWND hParent = GetAncestor(browser->GetHost()->GetWindowHandle(), GA_ROOT))
 				SetFocus(hParent);
 		}
-
 		return true;
 	}
-	}
+
 #endif
 	return false;
 }

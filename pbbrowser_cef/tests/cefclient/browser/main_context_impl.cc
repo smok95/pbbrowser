@@ -49,8 +49,14 @@ MainContextImpl::MainContextImpl(CefRefPtr<CefCommandLine> command_line,
   // Set the main URL.
   if (command_line_->HasSwitch(switches::kUrl))
     main_url_ = command_line_->GetSwitchValue(switches::kUrl);
-  if (main_url_.empty())
-    main_url_ = kDefaultUrl;
+  if (main_url_.empty()) {
+#if defined(OS_WIN)
+	  main_url_ = MainContext::Get()->GetAppWorkingDirectory() + "index.html";
+#else
+	  main_url_ = kDefaultUrl;
+#endif // defined(OS_WIN)
+  }
+    
 
   // Whether windowless (off-screen) rendering will be used.
   use_windowless_rendering_ =
