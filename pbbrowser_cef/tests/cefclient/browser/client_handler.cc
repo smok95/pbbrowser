@@ -474,11 +474,11 @@ void ClientHandler::OnDownloadUpdated(
 bool ClientHandler::OnDragEnter(CefRefPtr<CefBrowser> browser,
                                 CefRefPtr<CefDragData> dragData,
                                 CefDragHandler::DragOperationsMask mask) {
-  CEF_REQUIRE_UI_THREAD();
-
+  CEF_REQUIRE_UI_THREAD();  
   // Forbid dragging of URLs and files.
   if ((mask & DRAG_OPERATION_LINK) && !dragData->IsFragment()) {
-    test_runner::Alert(browser, "cefclient blocks dragging of URLs and files");
+    // alert표시안함, 2019.10.24 kim,jk
+	// test_runner::Alert(browser, "cefclient blocks dragging of URLs and files");
     return true;
   }
 
