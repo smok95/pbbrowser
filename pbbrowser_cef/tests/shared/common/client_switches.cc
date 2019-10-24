@@ -45,6 +45,8 @@ const char kLoadExtension[] = "load-extension";
 const char kNoActivate[] = "no-activate";
 const char kConsoleLogFile[] = "console-log-file";
 const char kDebugMode[] = "debug";
+const char kWidth[] = "width";
+const char kHeight[] = "height";
 
 }  // namespace switches
 }  // namespace client

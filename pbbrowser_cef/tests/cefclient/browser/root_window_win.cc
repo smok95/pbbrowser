@@ -161,7 +161,7 @@ void RootWindowWin::Init(RootWindow::Delegate* delegate,
   start_rect_.top = config.bounds.y;
   start_rect_.right = config.bounds.x + config.bounds.width;
   start_rect_.bottom = config.bounds.y + config.bounds.height;
-
+  
   CreateBrowserWindow(config.url);
 
   initialized_ = true;
@@ -349,7 +349,7 @@ void RootWindowWin::CreateRootWindow(const CefBrowserSettings& settings,
   }
 
   int x, y, width, height;
-  if (::IsRectEmpty(&start_rect_)) {
+  if (::IsRectEmpty(&start_rect_)) {	  
     // Use the default window position/size.
     x = y = width = height = CW_USEDEFAULT;
   } else {
@@ -363,12 +363,40 @@ void RootWindowWin::CreateRootWindow(const CefBrowserSettings& settings,
     height = window_rect.bottom - window_rect.top;
   }
 
+  static bool bSetCustomWinSize = false;
+  if (!bSetCustomWinSize) {
+	  bSetCustomWinSize = true;
+	  // 사용자지정 윈도우사이즈 설정, 2019.10.24 kim,jk
+	  const bool hasWidth = command_line->HasSwitch(switches::kWidth);
+	  const bool hasHeight = command_line->HasSwitch(switches::kHeight);
+	  if (hasWidth || hasHeight) {
+		  width = hasWidth ? atoi(command_line->GetSwitchValue(switches::kWidth).ToString().c_str()) : 0;
+		  height = hasHeight ? atoi(command_line->GetSwitchValue(switches::kHeight).ToString().c_str()) : 0;
+
+		  // w or h값이 0보다 작으면 주모니터크기의 70% 크기로 설정
+		  if (width <= 0)
+			  width = GetSystemMetrics(SM_CXSCREEN) / 10 * 7;
+
+		  if (height <= 0)
+			  height = GetSystemMetrics(SM_CYSCREEN) / 10 * 7;
+
+		  RECT win_rect = { 0,0, width, height };
+		  ::AdjustWindowRectEx(&win_rect, dwStyle, with_controls_, dwExStyle);
+
+		  x = y = CW_USEDEFAULT; // 시작좌표는 기본값으로 설정
+		  width = win_rect.right - win_rect.left;
+		  height = win_rect.bottom - win_rect.top;
+	  }
+  }
+
   browser_settings_ = settings;
 
   // Create the main window initially hidden.
   CreateWindowEx(dwExStyle, window_class.c_str(), window_title.c_str(), dwStyle,
                  x, y, width, height, NULL, NULL, hInstance, this);
   CHECK(hwnd_);
+
+  
 
   if (!called_enable_non_client_dpi_scaling_ && IsProcessPerMonitorDpiAware()) {
     // This call gets Windows to scale the non-client area when WM_DPICHANGED

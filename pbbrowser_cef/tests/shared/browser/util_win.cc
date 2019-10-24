@@ -173,4 +173,9 @@ float GetDeviceScaleFactor() {
   return scale_factor;
 }
 
+bool IsRectZero(const RECT& rect) {
+	return rect.left == 0 && rect.top == 0 && rect.bottom == 0 && rect.right == 0;
+}
+
+
 }  // namespace client

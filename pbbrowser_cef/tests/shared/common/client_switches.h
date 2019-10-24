@@ -39,6 +39,8 @@ extern const char kLoadExtension[];
 extern const char kNoActivate[];
 extern const char kConsoleLogFile[];	// console.log message를 파일에 기록, 2019.10.01 kim,jk
 extern const char kDebugMode[];			// debug mode, 2019.10.01 kim,jk
+extern const char kWidth[];				// 초기 윈도우창 너비, 2019.10.24 kim,jk
+extern const char kHeight[];			// 초기 윈도우창 높이, 2019.10.24 kim,jk
 
 }  // namespace switches
 }  // namespace client

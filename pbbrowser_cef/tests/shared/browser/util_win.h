@@ -39,6 +39,8 @@ bool IsKeyDown(WPARAM wparam);
 // return 2.0.
 float GetDeviceScaleFactor();
 
+bool IsRectZero(const RECT& rect);
+
 }  // namespace client
 
 #endif  // CEF_TESTS_SHARED_BROWSER_UTIL_WIN_H_

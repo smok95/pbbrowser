@@ -171,8 +171,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,3
- PRODUCTVERSION 1,0,0,3
+ FILEVERSION 1,0,0,4
+ PRODUCTVERSION 1,0,0,4
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -189,12 +189,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Yuri Solution"
             VALUE "FileDescription", "KOSCOM PowerBase+ Browser"
-            VALUE "FileVersion", "1.0.0.3"
+            VALUE "FileVersion", "1.0.0.4"
             VALUE "InternalName", "pbbrowser"
             VALUE "LegalCopyright", "Copyright (C) 2019 Yuri Solution"
             VALUE "OriginalFilename", "pbbrowser.exe"
             VALUE "ProductName", "KOSCOM PowerBase+ Browser"
-            VALUE "ProductVersion", "1.0.0.3"
+            VALUE "ProductVersion", "1.0.0.4"
         END
     END
     BLOCK "VarFileInfo"
